@@ -63,6 +63,20 @@ For each Monday:
 
 The three ranking metrics are `offline_duration_sec`, `disconnection_cnt`, and `reboot_cnt`. Exact duplicate gateway-timestamp records are removed once before scoring.
 
+## Submission contents
+
+| Requirement | Location |
+| --- | --- |
+| Validated 120-row output | `predictions.csv` |
+| Code that produces the output | `run.py` and `gateway_ranker/` |
+| Five decisions and chosen Part 2 area | `DECISIONS.md` |
+| AI tool disclosure and one corrected issue | `AI-USAGE.md` |
+| Data Science work | `analyse.py`, `analysis_report.md`, comparison CSV files, and `charts/` |
+| Setup and run instructions | This README |
+| Screen recording | Link in the section below |
+
+The supplied dataset, challenge ZIP, brief, data dictionary, FAQs, and original bundle README are not committed. Reviewers should place the supplied `data` folder at the project root before running the code.
+
 ## Project structure
 
 ```text
@@ -84,6 +98,8 @@ validate_submission.py supplied format validator
 Add the public, access-tested 6-8 minute recording link here before submission:
 
 `[RECORDING LINK TO BE ADDED]`
+
+The recording demonstrates setup, prediction generation and validation, and the main Data Science result.
 
 ## Important limitation
 
