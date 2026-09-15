@@ -25,13 +25,13 @@ def _finish(fig: plt.Figure, path: Path) -> None:
 def create_charts(
     bundle: DataBundle,
     comparison: pd.DataFrame,
-    details: dict[str, object],
     output_dir: Path,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     plt.style.use("seaborn-v0_8-whitegrid")
 
-    fig, ax = plt.subplots(figsize=(8, 4.5))
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
+    ax = axes[0]
     recall = comparison["observed_fault_recall"] * 100
     lower = (comparison["observed_fault_recall"] - comparison["recall_p05"]) * 100
     upper = (comparison["recall_p95"] - comparison["observed_fault_recall"]) * 100
@@ -45,13 +45,36 @@ def create_charts(
     )
     ax.axvline(DEFAULT_SIGMA, color="#D97706", linestyle="--", label="Current threshold")
     ax.set(
-        title="Higher sensitivity did not guarantee more observed repairs in the top 15",
+        title="Observed repairs selected",
         xlabel="Anomaly threshold (sigma)",
         ylabel="Observed repaired faults selected (%)",
         ylim=(0, max(10, comparison["recall_p95"].max() * 115)),
     )
     ax.legend(frameon=False)
-    _finish(fig, output_dir / "threshold_observed_recall.png")
+
+    ax = axes[1]
+    ax.plot(
+        comparison["sigma"],
+        comparison["labelled_proxy_total_cost_eur"],
+        marker="o",
+        color="#0F766E",
+    )
+    ax.axvline(DEFAULT_SIGMA, color="#D97706", linestyle="--")
+    ax.set(
+        title="Incomplete historical cost proxy",
+        xlabel="Anomaly threshold (sigma)",
+        ylabel="Average weekly proxy cost (EUR)",
+    )
+    ax.text(
+        0.02,
+        0.04,
+        "Uses observed repairs only; not the official cost",
+        transform=ax.transAxes,
+        fontsize=9,
+        color="#555555",
+        bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.8},
+    )
+    _finish(fig, output_dir / "threshold_evidence_and_cost.png")
 
     fig, ax = plt.subplots(figsize=(8, 4.5))
     ax.plot(

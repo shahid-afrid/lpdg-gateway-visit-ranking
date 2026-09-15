@@ -19,6 +19,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--table", type=Path, default=Path("threshold_comparison.csv")
     )
+    parser.add_argument(
+        "--cooldown-table", type=Path, default=Path("cooldown_comparison.csv")
+    )
     return parser.parse_args()
 
 
@@ -27,11 +30,14 @@ def main() -> int:
     bundle = load_data(args.data)
     comparison, details = evaluate_thresholds(bundle)
     comparison.to_csv(args.table, index=False)
-    create_charts(bundle, comparison, details, args.charts)
+    details["cooldowns"].to_csv(args.cooldown_table, index=False)
+    create_charts(bundle, comparison, args.charts)
 
     default = comparison[comparison["sigma"].eq(DEFAULT_SIGMA)].iloc[0]
     bootstrap = details["bootstrap"]
     meter = details["meter_reads"]
+    holdout = details["forward_gateway_holdout"]
+    cooldowns = details["cooldowns"]
 
     print(f"Removed {bundle.duplicate_telemetry_rows_removed:,} exact telemetry duplicates.")
     print(f"Analysed {int(default['weeks'])} historical weeks.")
@@ -56,11 +62,25 @@ def main() -> int:
         f"gateways averaged {meter['selected_mean_success']:.1%} success versus "
         f"{meter['other_mean_success']:.1%} for the rest."
     )
-    print(f"Wrote {args.table} and four charts to {args.charts}.")
+    print(
+        "Forward gateway holdout: "
+        f"{int(holdout['selected_fault_fixed'])} repairs among "
+        f"{int(holdout['selected_with_definitive_outcome'])} selected known outcomes; "
+        f"observed repaired-fault recall {holdout['observed_fault_recall']:.1%}."
+    )
+    no_cooldown = cooldowns[cooldowns["cooldown_weeks"].eq(0)].iloc[0]
+    one_week = cooldowns[cooldowns["cooldown_weeks"].eq(1)].iloc[0]
+    print(
+        "One-week blind cooldown: consecutive repeats "
+        f"{int(no_cooldown['consecutive_repeat_slots'])} -> "
+        f"{int(one_week['consecutive_repeat_slots'])}; observed repairs selected "
+        f"{int(no_cooldown['selected_fault_fixed'])} -> "
+        f"{int(one_week['selected_fault_fixed'])}."
+    )
+    print(f"Wrote {args.table}, {args.cooldown_table}, and four charts to {args.charts}.")
     print("These are retrospective indicators from biased labels, not hidden-ground-truth scores.")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

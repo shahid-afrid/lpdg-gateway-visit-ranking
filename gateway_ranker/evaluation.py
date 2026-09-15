@@ -12,6 +12,7 @@ from .config import (
     COST_PER_VISIT_EUR,
     DEFAULT_SIGMA,
     EVALUATION_WEEKS,
+    FORWARD_VALIDATION_WEEKS,
     THRESHOLDS,
     VISITS_PER_WEEK,
 )
@@ -164,6 +165,33 @@ def _cluster_bootstrap(
     }
 
 
+def _forward_gateway_holdout(bundle: DataBundle) -> dict[str, float]:
+    """Stress-test three sigma on later weeks and a fixed half of gateways."""
+
+    _, labels, _ = _evaluate_one_threshold(
+        bundle,
+        DEFAULT_SIGMA,
+        weeks=FORWARD_VALIDATION_WEEKS,
+    )
+    # The final hexadecimal digit creates a stable split without learning from
+    # gateway behaviour or outcomes. Odd IDs form the holdout group.
+    holdout = labels[labels["gateway_id"].map(lambda value: int(value[-1], 16) % 2 == 1)]
+    selected = holdout[holdout["selected"]]
+    faults = holdout[holdout["outcome"].eq(FAULT_FIXED)]
+    selected_faults = int(selected["outcome"].eq(FAULT_FIXED).sum())
+    intervals = _cluster_bootstrap(holdout)
+    return {
+        "weeks": float(len(FORWARD_VALIDATION_WEEKS)),
+        "gateways_with_labels": float(holdout["gateway_id"].nunique()),
+        "selected_with_definitive_outcome": float(len(selected)),
+        "selected_fault_fixed": float(selected_faults),
+        "observed_faults": float(len(faults)),
+        "known_precision": selected_faults / len(selected) if len(selected) else np.nan,
+        "observed_fault_recall": selected_faults / len(faults) if len(faults) else np.nan,
+        **intervals,
+    }
+
+
 def _meter_read_evidence(
     bundle: DataBundle,
     selections: dict[dt.date, set[str]],
@@ -192,6 +220,70 @@ def _meter_read_evidence(
         "weekly_difference_min": float(np.min(differences)) if differences else np.nan,
         "weekly_difference_max": float(np.max(differences)) if differences else np.nan,
     }
+
+
+def evaluate_cooldowns(
+    bundle: DataBundle,
+    cooldowns: tuple[int, ...] = (0, 1, 2),
+) -> pd.DataFrame:
+    """Compare blind repeat-suppression rules at the fixed default threshold."""
+
+    rankings = {
+        week: rank_week(bundle.telemetry, bundle.gateways, week, sigma=DEFAULT_SIGMA)
+        for week in EVALUATION_WEEKS
+    }
+    rows: list[dict[str, float]] = []
+
+    for cooldown in cooldowns:
+        history: list[set[str]] = []
+        labelled_weeks: list[pd.DataFrame] = []
+        consecutive_repeats = 0
+
+        for week in EVALUATION_WEEKS:
+            ranking = rankings[week]
+            blocked = set().union(*history[-cooldown:]) if cooldown and history else set()
+            selected = set(
+                ranking.loc[~ranking["gateway_id"].isin(blocked)]
+                .head(VISITS_PER_WEEK)["gateway_id"]
+            )
+            if len(selected) < VISITS_PER_WEEK:
+                fill = ranking.loc[~ranking["gateway_id"].isin(selected)].head(
+                    VISITS_PER_WEEK - len(selected)
+                )
+                selected.update(fill["gateway_id"])
+
+            if history:
+                consecutive_repeats += len(selected & history[-1])
+            history.append(selected)
+
+            labels = _weekly_visit_labels(bundle.field_visits, week)
+            if not labels.empty:
+                labels["selected"] = labels["gateway_id"].isin(selected)
+                labelled_weeks.append(labels)
+
+        labelled = pd.concat(labelled_weeks, ignore_index=True)
+        definitive = labelled[labelled["outcome"].isin([FAULT_FIXED, NO_FAULT_FOUND])]
+        selected_known = definitive[definitive["selected"]]
+        observed_faults = definitive[definitive["outcome"].eq(FAULT_FIXED)]
+        selected_faults = int(selected_known["outcome"].eq(FAULT_FIXED).sum())
+        rows.append(
+            {
+                "cooldown_weeks": float(cooldown),
+                "consecutive_repeat_slots": float(consecutive_repeats),
+                "unique_gateways_selected": float(len(set().union(*history))),
+                "selected_with_definitive_outcome": float(len(selected_known)),
+                "selected_fault_fixed": float(selected_faults),
+                "known_precision": (
+                    selected_faults / len(selected_known) if len(selected_known) else np.nan
+                ),
+                "observed_fault_recall": (
+                    float(observed_faults["selected"].mean())
+                    if len(observed_faults)
+                    else np.nan
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def evaluate_thresholds(bundle: DataBundle) -> tuple[pd.DataFrame, dict[str, object]]:
@@ -228,6 +320,8 @@ def evaluate_thresholds(bundle: DataBundle) -> tuple[pd.DataFrame, dict[str, obj
             for key in ("precision_p05", "precision_p95", "recall_p05", "recall_p95")
         },
         "meter_reads": _meter_read_evidence(bundle, reference),
+        "forward_gateway_holdout": _forward_gateway_holdout(bundle),
+        "cooldowns": evaluate_cooldowns(bundle),
         "default_labels": default_labels,
         "default_selections": reference,
     }

@@ -28,7 +28,7 @@
 
 **Why I rejected the apparent improvement.** Only 17.3% of the three-sigma selection slots had a definitive visit outcome. The 2.5- and 3.0-sigma gateway-bootstrap ranges overlap, and their average top-15 overlap is only 64.8%. Changing the production threshold for three extra observed repairs across 22 weeks would overfit a biased sample. Three sigma is therefore a stable default rather than a claimed optimum.
 
-**Limitation.** Hidden ground truth could show that 2.5 sigma has lower real cost. New field outcomes should be used to revisit this decision.
+**Limitation.** Hidden ground truth could show that 2.5 sigma has lower real cost. A blind one-week repeat cooldown was also tested, but it reduced observed repairs selected from 46 to 38, so repeat eligibility remains until a completed visit can be confirmed. New field outcomes should be used to revisit both decisions.
 
 ## 4. I removed exact duplicates and kept absence separate from zero
 
@@ -42,7 +42,7 @@
 
 ## 5. I treated historical visits as incomplete evidence
 
-**Choice.** I evaluate the actual weekly top 15 against visits completed in that week. `Fehler behoben` is evidence of a fault, `Kein Fehler gefunden` is evidence against a persistent fault, and `Kein Zugang` remains unknown. I report label coverage and resample whole gateway histories to show a 90% range.
+**Choice.** I evaluate the actual weekly top 15 against visits completed in that week. `Fehler behoben` is evidence of a fault, `Kein Fehler gefunden` is evidence against a persistent fault, and `Kein Zugang` remains unknown. I report label coverage, resample whole gateway histories to show a 90% range, and stress-test the fixed three-sigma rule on the later 11 weeks using a separate half of gateway IDs.
 
 **Alternative.** I considered treating every unvisited gateway as healthy and reporting one precision and recall number.
 
@@ -59,4 +59,3 @@
 5. It cannot use current meter-read results after 26 January 2026 because those records were not supplied.
 
 With two more weeks, I would first ingest the scored-period field outcomes and recalibrate the threshold. Next, I would investigate missing-hour patterns as a separate failure signal. Finally, I would test whether individual metrics should carry different weights based on their relationship with later meter-read deterioration.
-

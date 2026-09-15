@@ -115,7 +115,10 @@ def _reason(row: pd.Series, sigma: float) -> str:
             f"No metric breach, but {int(row['missing_recent_hours'])} of 168 expected "
             "telemetry hours were absent in the previous 7 days."
         )
-    return "No metric breach; included as the next-highest deterministic score to fill 15 required rows."
+    return (
+        "No metric breach; included as the next-highest deterministic score "
+        "to fill 15 required rows."
+    )
 
 
 def build_predictions(

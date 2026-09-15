@@ -28,3 +28,4 @@ EVALUATION_WEEKS = tuple(
     dt.date(2025, 9, 1) + dt.timedelta(days=7 * offset)
     for offset in range(22)
 )
+FORWARD_VALIDATION_WEEKS = EVALUATION_WEEKS[11:]

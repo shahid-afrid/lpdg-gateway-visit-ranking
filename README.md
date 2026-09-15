@@ -40,7 +40,7 @@ python validate_submission.py predictions.csv
 python analyse.py --data data
 ```
 
-This writes `threshold_comparison.csv` and four charts under `charts/`. On the development machine, prediction took about 8 seconds and the full historical analysis took about one minute.
+This writes `threshold_comparison.csv`, `cooldown_comparison.csv`, and four charts under `charts/`. On the development machine, prediction took about 8 seconds and the full historical analysis took about one minute.
 
 ## Run tests
 
@@ -88,4 +88,3 @@ Add the public, access-tested 6-8 minute recording link here before submission:
 ## Important limitation
 
 Historical field visits are a selected sample of already-suspected gateways. The reported evaluation measures agreement within that observed sample; it cannot establish fleet-wide precision, recall, or the official hidden-ground-truth cost. See `analysis_report.md` for the complete interpretation.
-

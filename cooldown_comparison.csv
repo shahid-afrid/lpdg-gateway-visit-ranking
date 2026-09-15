@@ -1,0 +1,4 @@
+cooldown_weeks,consecutive_repeat_slots,unique_gateways_selected,selected_with_definitive_outcome,selected_fault_fixed,known_precision,observed_fault_recall
+0.0,119.0,131.0,57.0,46.0,0.8070175438596491,0.4791666666666667
+1.0,0.0,149.0,51.0,38.0,0.7450980392156863,0.3958333333333333
+2.0,0.0,164.0,34.0,22.0,0.6470588235294118,0.22916666666666666
