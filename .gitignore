@@ -1,0 +1,25 @@
+# Confidential challenge material
+data/
+03-challenge-data.zip
+
+# Organizer reference documents (not required in the submission repository)
+01-Challenge-Brief.pdf
+02-Data-Dictionary.pdf
+03-FAQ-Round-1.pdf
+04-FAQ-Round-2.pdf
+README.txt
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+# Local environments and editor files
+.venv/
+venv/
+.vscode/
+.idea/
+
+# Temporary output
+*.tmp
