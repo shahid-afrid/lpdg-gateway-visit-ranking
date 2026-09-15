@@ -42,6 +42,32 @@ python analyse.py --data data
 
 This writes `threshold_comparison.csv`, `cooldown_comparison.csv`, and four charts under `charts/`. On the development machine, prediction took about 8 seconds and the full historical analysis took about one minute.
 
+## Visual results
+
+### Recommended gateways for the first week
+
+![Recommended gateways for 2 February 2026](charts/first_week_top15.png)
+
+The chart shows the 15 gateways selected for 2 February 2026, ordered by the number of recent telemetry readings that crossed the three-sigma threshold. A larger count means the gateway showed unusual offline time, disconnections, or reboots more often during the previous seven days.
+
+### Threshold evidence and cost
+
+![Observed repairs and historical cost proxy by threshold](charts/threshold_evidence_and_cost.png)
+
+The left panel compares the percentage of observed repaired gateways captured at each threshold; its error bars show the 90% gateway-bootstrap range. The right panel compares an incomplete historical cost proxy. Although 2.5 sigma has the best point estimate, the evidence is limited and the uncertainty ranges overlap, so the final method retains the supplied three-sigma threshold.
+
+### Stability of the weekly visit list
+
+![Overlap with the three-sigma weekly visit list](charts/threshold_selection_stability.png)
+
+This chart measures how much each threshold's weekly top 15 overlaps with the selected three-sigma list. The 2.5-sigma result overlaps by about 65% on average, showing that a small threshold change would replace several weekly visits.
+
+### Cost of detecting a persistent fault late
+
+![Cost of delayed attention to a persistent fault](charts/fault_delay_cost.png)
+
+Under the supplied cost rule, dispatching a visit costs EUR 380 and each unresolved fault week costs EUR 600. The chart shows why earlier detection matters: every additional week before the first successful visit adds another EUR 600 to the fault episode.
+
 ## Run tests
 
 ```powershell
@@ -73,6 +99,7 @@ The three ranking metrics are `offline_duration_sec`, `disconnection_cnt`, and `
 | AI tool disclosure and one corrected issue | `AI-USAGE.md` |
 | Data Science work | `analyse.py`, `analysis_report.md`, comparison CSV files, and `charts/` |
 | Setup and run instructions | This README |
+| Resume | Registration-ID-named PDF in the repository root, to be added before submission |
 | Screen recording | Link in the section below |
 
 The supplied dataset, challenge ZIP, brief, data dictionary, FAQs, and original bundle README are not committed. Reviewers should place the supplied `data` folder at the project root before running the code.
