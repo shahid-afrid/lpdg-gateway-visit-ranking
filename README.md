@@ -34,6 +34,28 @@ Write the recommendation and limitations
 
 I did not train a machine-learning model. The brief allows the supplied statistical baseline to be used, and the historical visit outcomes are incomplete and selected by earlier operational decisions. I therefore spent Part 2 testing the decision rule and its limitations instead of fitting a more complicated model to weak labels.
 
+## The main idea in simple words
+
+I treated this as a weekly ranking problem:
+
+1. Pick a Monday and ignore everything recorded on or after that time.
+2. Keep only gateways that were active on that Monday.
+3. Use the previous 28 days to learn what is normal for each gateway.
+4. Look at the latest seven days and count unusually high offline, disconnection and reboot readings.
+5. Sort the gateways by that count and return the first 15 with a reason.
+
+The program follows the same order:
+
+```text
+run.py
+  → load_data() checks and cleans the files
+  → build_predictions() loops through the eight Mondays
+  → rank_week() scores and sorts one week
+  → validate() checks the final predictions.csv
+```
+
+I chose this approach because it uses basic statistics, is easy to inspect, and can be changed during a live review. The score means "how often this gateway behaved unusually compared with itself"; it does not mean "probability of failure".
+
 ## How I examined the data
 
 I first loaded every supplied file, checked its columns and dates, and decided whether it was suitable for prediction or only for later evaluation.
