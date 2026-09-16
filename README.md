@@ -83,6 +83,36 @@ I first loaded every supplied file, checked its columns and dates, and decided w
 - Only 17.3% of the historical selected slots had a definitive visit outcome. This low coverage is why I report uncertainty and avoid claiming fleet-wide accuracy.
 - A lower 2.5-sigma threshold had a slightly better historical point estimate, but the uncertainty ranges overlapped and the weekly visit lists changed substantially. I kept three sigma as the more cautious default.
 
+## Challenges I faced
+
+- **Duplicate telemetry:** 6,547 gateway-hour rows were repeated. I removed only exact duplicates and made conflicting duplicates fail with a clear error.
+- **Different identifier and date formats:** Gateway IDs and dates came from CSV, Parquet and Excel files. I normalised the IDs and converted dates before joining or filtering the tables.
+- **Avoiding future information:** A weekly recommendation must not use data recorded after that Monday. I applied the cutoff inside the ranking function and added a test showing that Monday data cannot change the result.
+- **Incomplete labels:** Historical visits cover gateways that somebody already suspected. I treated unvisited gateways as unknown instead of healthy and reported the small amount of labelled coverage.
+- **Missing telemetry:** Silence can indicate a fault, a network problem or an inactive reporting path. I kept missing hours visible instead of replacing them with healthy zeros.
+- **Choosing a threshold:** The 2.5-sigma point estimate looked slightly better, but its uncertainty overlapped with three sigma and it changed many weekly selections. I kept the more cautious default.
+- **Repeated recommendations:** A blind cooldown increased list diversity but selected fewer observed repairs. I kept repeat eligibility because the files do not confirm whether a recommended visit was completed.
+
+## Key takeaways
+
+- Understanding and cleaning the data was more important than immediately choosing a complex model.
+- A simple method is useful when its cutoff, score and limitations are clear.
+- Time order matters: using future information can make a historical result look better than it would have been in practice.
+- One accuracy value is not enough when labels are incomplete; coverage and uncertainty must also be shown.
+- Operational cost and the weekly limit matter more than a general classification metric.
+- A recommendation is not a diagnosis. The field outcome is needed to learn whether the decision was correct.
+
+## How I would extend the project
+
+1. Record the outcome of every recommended visit so that selected and unselected gateways can be evaluated more consistently.
+2. Add confirmed visit completion and fault-episode state, then suppress a repeat only when the earlier visit actually happened.
+3. Study missing telemetry as a separate signal instead of using it only as a tie-breaker.
+4. Test whether offline duration, disconnections and reboots should have different weights after better labels become available.
+5. Monitor changes in telemetry coverage and gateway behaviour when a new month of data arrives.
+6. Revisit the 2.5-sigma threshold with new outcomes and adopt it only if the cost improvement remains stable.
+7. Add a small local dashboard or API only if the operations team needs to inspect reasons or rerun individual weeks.
+8. Consider a machine-learning model after collecting stronger labels, and compare it with the three-sigma rule using the same time-based cost evaluation.
+
 ## Setup
 
 Python 3.11 or later is recommended.
