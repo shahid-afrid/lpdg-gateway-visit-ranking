@@ -10,6 +10,8 @@
 
 **Limitation.** The solution is a command-line workflow rather than a service. It is designed for a small operations team running one weekly ranking.
 
+**Implementation.** The complete prediction path runs with `python run.py --data data --out predictions.csv`. I kept this direct command instead of adding Docker because the selected area is Data Science, the dependencies are pinned, and the challenge accepts any reproducible one-command interface. The data and output locations remain configurable.
+
 ## 2. I defined a visit need as persistent change from the gateway's own normal
 
 **Choice.** An active gateway warrants priority when offline duration, disconnections, or reboots repeatedly exceed its own 28-day behaviour during the latest seven days. The score is the number of metric breaches above three standard deviations.
@@ -27,6 +29,8 @@
 **Alternative.** In the retrospective sample, 2.5 sigma selected 49 of 96 observed repaired faults, while 3.0 selected 46. Its labelled one-week proxy cost was about EUR 82 lower per week.
 
 **Why I rejected the apparent improvement.** Only 17.3% of the three-sigma selection slots had a definitive visit outcome. The 2.5- and 3.0-sigma gateway-bootstrap ranges overlap, and their average top-15 overlap is only 64.8%. Changing the production threshold for three extra observed repairs across 22 weeks would overfit a biased sample. Three sigma is therefore a stable default rather than a claimed optimum.
+
+**Evidence.** At three sigma, known precision was 80.7% with a 90% gateway-bootstrap range of 72.3% to 88.7%. Observed repaired-fault recall was 47.9%, with a 90% range of 39.6% to 56.0%. The uncertainty is more important than the small difference between the threshold point estimates.
 
 **Limitation.** Hidden ground truth could show that 2.5 sigma has lower real cost. A blind one-week repeat cooldown was also tested, but it reduced observed repairs selected from 46 to 38, so repeat eligibility remains until a completed visit can be confirmed. New field outcomes should be used to revisit both decisions.
 
