@@ -77,3 +77,22 @@ def test_gateway_with_history_but_no_recent_rows_remains_visible() -> None:
     silent = result[result["gateway_id"].eq("AAAAAAAAAAAA")].iloc[0]
     assert silent["observed_recent_hours"] == 0
     assert silent["missing_recent_hours"] == 168
+
+
+def test_silent_gateway_uses_type_safe_defaults() -> None:
+    telemetry, gateways = _fixtures()
+    recent_start = pd.Timestamp("2026-01-26", tz="UTC")
+    telemetry = telemetry[
+        ~(
+            telemetry["gateway_id"].eq("AAAAAAAAAAAA")
+            & telemetry["ts"].ge(recent_start)
+        )
+    ]
+
+    result = rank_week(telemetry, gateways, dt.date(2026, 2, 2), sigma=3.0)
+    silent = result[result["gateway_id"].eq("AAAAAAAAAAAA")].iloc[0]
+
+    assert silent["metric_breaches"] == 0
+    assert silent["observed_recent_hours"] == 0
+    assert silent["worst_metric"] == ""
+    assert pd.isna(silent["peak_sigma"])
