@@ -8,6 +8,59 @@ Part 2 area: **D - Data Science**.
 
 The analysis defines what "needs a visit" means, compares anomaly thresholds, reports uncertainty from gateway-level resampling, and relates the result to the EUR 380 visit cost and EUR 600 weekly fault cost.
 
+## How I approached the problem
+
+I worked in the following order:
+
+```text
+Read the brief and data dictionary
+        ↓
+Run the supplied baseline
+        ↓
+Inspect and clean the data
+        ↓
+Build a repeatable weekly ranking
+        ↓
+Generate and validate predictions.csv
+        ↓
+Define what "needs a visit" means
+        ↓
+Backtest on earlier weeks
+        ↓
+Compare thresholds, uncertainty and cost
+        ↓
+Write the recommendation and limitations
+```
+
+I did not train a machine-learning model. The brief allows the supplied statistical baseline to be used, and the historical visit outcomes are incomplete and selected by earlier operational decisions. I therefore spent Part 2 testing the decision rule and its limitations instead of fitting a more complicated model to weak labels.
+
+## How I examined the data
+
+I first loaded every supplied file, checked its columns and dates, and decided whether it was suitable for prediction or only for later evaluation.
+
+| Data | What I found and checked | How I used it |
+| --- | --- | --- |
+| Hourly telemetry | 1,426,840 cleaned rows for 320 gateways, from 1 August 2025 to 31 March 2026. I checked timestamps, gateway IDs, missing ranking values and duplicate gateway-hour records. | Main prediction input. |
+| Gateway master | 332 asset records. I checked unique IDs and converted installation and decommission dates. | Keeps only gateways active on each prediction Monday. |
+| Field visits | 642 visits: 223 repairs, 390 no-fault outcomes and 29 no-access outcomes. | Retrospective evidence only; not a prediction feature. |
+| Meter-read success | 7,226 gateway-week rows over 26 weeks, ending 26 January 2026. I checked that reads were between zero and the expected count. | Supporting evidence about operational impact. |
+| Engineer review | 120 reviewed gateways. I checked its identifiers, categories and review dates. | Loaded and validated, but not used in the ranking because it is a one-time selected review. |
+
+### What the data audit changed
+
+- I found and removed 6,547 exact duplicate telemetry rows. Counting them would have increased some scores twice.
+- I standardised gateway IDs by removing separators and using uppercase 12-character values.
+- I kept a missing telemetry hour separate from a reported zero because they do not mean the same thing.
+- I applied installation and decommission dates at every weekly cutoff so inactive gateways were not ranked.
+- I treated unvisited gateways as unknown rather than healthy because historical visits cover gateways that somebody already suspected.
+
+### What I learned before choosing the final rule
+
+- Gateways have different normal behaviour, so I compare each gateway with its own recent history instead of using one fixed fleet-wide value.
+- At the retained three-sigma rule, historically selected gateways averaged 57.3% meter-read success, compared with 86.0% for the rest. This supports operational relevance, but it does not prove causation.
+- Only 17.3% of the historical selected slots had a definitive visit outcome. This low coverage is why I report uncertainty and avoid claiming fleet-wide accuracy.
+- A lower 2.5-sigma threshold had a slightly better historical point estimate, but the uncertainty ranges overlapped and the weekly visit lists changed substantially. I kept three sigma as the more cautious default.
+
 ## Setup
 
 Python 3.11 or later is recommended.
