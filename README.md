@@ -99,7 +99,7 @@ The three ranking metrics are `offline_duration_sec`, `disconnection_cnt`, and `
 | AI tool disclosure and one corrected issue | `AI-USAGE.md` |
 | Data Science work | `analyse.py`, `analysis_report.md`, comparison CSV files, and `charts/` |
 | Setup and run instructions | This README |
-| Resume | Registration-ID-named PDF in the repository root, to be added before submission |
+| Resume | `23091A32D4.pdf` in the repository root |
 | Screen recording | Link in the section below |
 
 The supplied dataset, challenge ZIP, brief, data dictionary, FAQs, and original bundle README are not committed. Reviewers should place the supplied `data` folder at the project root before running the code.
@@ -122,11 +122,9 @@ validate_submission.py supplied format validator
 
 ## Screen recording
 
-Add the public, access-tested 6-8 minute recording link here before submission:
+[Watch the project walkthrough](https://drive.google.com/drive/folders/1ZjnCXAFgU6ycpqQoulerhW0OjwV8-Pdq?usp=sharing)
 
-`[RECORDING LINK TO BE ADDED]`
-
-The recording demonstrates setup, prediction generation and validation, and the main Data Science result.
+The recording demonstrates the problem, data checks, prediction generation and validation, and the main Data Science results.
 
 ## Important limitation
 
